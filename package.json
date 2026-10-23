@@ -1,8 +1,9 @@
 {
-  "name": "backend - poyecto anf",
+  "name": "backend-proyecto-anf",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend de control financiero",
+  "main": "server.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node server.js"
   },
@@ -16,7 +17,6 @@
       "onFail": "download"
     }
   },
-  "type": "module",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
