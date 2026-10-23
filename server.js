@@ -13,15 +13,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta_empresarial_2026';
 
-// Conexión a PostgreSQL
+// Reemplaza la conexión local por la conexión en la nube (Supabase)
 const pool = new Pool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'tu_password',
-    database: process.env.DB_NAME || 'finanzas_db',
-    port: process.env.DB_PORT || 5432,
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // Requerido por Supabase en conexiones externas
+    }
 });
-
 // Helper: Registrar en Bitácora (Módulo 7)
 async function registrarBitacora(usuarioId, modulo, accion, detalle, req) {
     try {
