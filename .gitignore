@@ -26,3 +26,7 @@ pnpm-error.log*
 # Sistema Operativo
 .DS_Store
 Thumbs.db
+
+# Carpetas de backups y temporales
+*.backup
+*.tmp   
