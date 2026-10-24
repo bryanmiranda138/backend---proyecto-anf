@@ -3,6 +3,13 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
+// Verificación rápida para asegurarnos de que el .env cargó la URL de Supabase
+if (!process.env.DATABASE_URL) {
+    console.error("❌ ERROR: No se encontró DATABASE_URL. Revisa tu archivo .env");
+    process.exit(1);
+}
+
+// Configuración obligatoria para Supabase
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
@@ -19,13 +26,13 @@ async function ejecutarRespaldo() {
     const tablas = ['usuarios', 'categorias', 'movimientos', 'bitacora'];
     const respaldoJSON = {};
     let contenidoSQL = `-- =========================================================\n`;
-    contenidoSQL += `-- RESPALDO DE BASE DE DATOS: FINANZASPRO SPA\n`;
+    contenidoSQL += `-- RESPALDO DE BASE DE DATOS: FINANZASPRO SPA (SUPABASE)\n`;
     contenidoSQL += `-- Fecha de generación: ${new Date().toLocaleString()}\n`;
     contenidoSQL += `-- =========================================================\n\n`;
     contenidoSQL += `BEGIN;\n\n`;
 
     try {
-        console.log('Iniciando copia de seguridad de PostgreSQL...');
+        console.log('☁️ Conectando a Supabase para iniciar copia de seguridad...');
 
         for (const tabla of tablas) {
             const { rows } = await pool.query(`SELECT * FROM ${tabla} ORDER BY id ASC`);

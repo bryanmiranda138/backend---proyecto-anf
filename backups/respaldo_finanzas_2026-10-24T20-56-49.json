@@ -1,0 +1,314 @@
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "nombre": "Administrador General",
+      "email": "admin@empresa.com",
+      "password_hash": "$2a$10$YsKulTQcpAOKxLYvHBjW5Od0GGxOpmO3kbJUmzy5jwtYc7L2nZMK.",
+      "rol": "admin",
+      "activo": true,
+      "creado_en": "2026-10-24T02:48:34.122Z"
+    },
+    {
+      "id": 4,
+      "nombre": "william Magaña",
+      "email": "will@empresa.com",
+      "password_hash": "$2b$10$3MyrabRtSJF3qh5Th6vosO8vwD8ts7F3h5z7Y6jx41S7nHVg9tqpa",
+      "rol": "empleado",
+      "activo": true,
+      "creado_en": "2026-10-24T20:21:14.123Z"
+    }
+  ],
+  "categorias": [
+    {
+      "id": 1,
+      "nombre": "Ventas de Productos",
+      "tipo": "ingreso",
+      "descripcion": "Ingresos por ventas comerciales directas",
+      "activa": true
+    },
+    {
+      "id": 2,
+      "nombre": "Servicios Profesionales",
+      "tipo": "ingreso",
+      "descripcion": "Honorarios y consultorías",
+      "activa": true
+    },
+    {
+      "id": 3,
+      "nombre": "Alquiler de Oficina",
+      "tipo": "gasto",
+      "descripcion": "Pago mensual de arrendamiento",
+      "activa": true
+    },
+    {
+      "id": 4,
+      "nombre": "Servicios Básicos",
+      "tipo": "gasto",
+      "descripcion": "Agua, energía eléctrica e internet",
+      "activa": true
+    },
+    {
+      "id": 5,
+      "nombre": "Transporte y Logística",
+      "tipo": "gasto",
+      "descripcion": "Combustible, envíos y viáticos",
+      "activa": true
+    },
+    {
+      "id": 6,
+      "nombre": "Suministros de Oficina",
+      "tipo": "gasto",
+      "descripcion": "Papelería e insumos operativos",
+      "activa": true
+    }
+  ],
+  "movimientos": [
+    {
+      "id": 1,
+      "usuario_id": 1,
+      "categoria_id": 3,
+      "tipo": "gasto",
+      "concepto": "abc",
+      "monto": "34.00",
+      "fecha": "2026-10-15T06:00:00.000Z",
+      "creado_en": "2026-10-24T09:15:21.188Z"
+    }
+  ],
+  "bitacora": [
+    {
+      "id": 1,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "190.57.70.132, 172.71.156.232, 10.24.63.117",
+      "fecha": "2026-10-24T03:16:27.914Z"
+    },
+    {
+      "id": 2,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Cierre de sesión",
+      "detalle": "El usuario cerró sesión",
+      "ip": "190.57.70.132, 172.71.151.204, 10.26.61.133",
+      "fecha": "2026-10-24T03:17:33.131Z"
+    },
+    {
+      "id": 3,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "190.57.70.132, 104.22.160.48, 10.26.61.133",
+      "fecha": "2026-10-24T03:17:35.315Z"
+    },
+    {
+      "id": 4,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.71.151.203, 10.29.97.133",
+      "fecha": "2026-10-24T08:50:59.299Z"
+    },
+    {
+      "id": 5,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.68.12.26, 10.26.61.133",
+      "fecha": "2026-10-24T08:50:59.305Z"
+    },
+    {
+      "id": 6,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.68.12.27, 10.26.61.133",
+      "fecha": "2026-10-24T08:50:59.304Z"
+    },
+    {
+      "id": 7,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.68.12.26, 10.29.97.133",
+      "fecha": "2026-10-24T08:50:59.388Z"
+    },
+    {
+      "id": 8,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.71.146.147, 10.24.63.117",
+      "fecha": "2026-10-24T08:50:59.497Z"
+    },
+    {
+      "id": 9,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 108.162.210.221, 10.29.97.133",
+      "fecha": "2026-10-24T08:50:59.586Z"
+    },
+    {
+      "id": 10,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 108.162.210.221, 10.26.61.133",
+      "fecha": "2026-10-24T08:51:00.700Z"
+    },
+    {
+      "id": 11,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.71.151.204, 10.24.63.117",
+      "fecha": "2026-10-24T08:51:00.793Z"
+    },
+    {
+      "id": 12,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.71.147.96, 10.29.97.133",
+      "fecha": "2026-10-24T08:55:29.085Z"
+    },
+    {
+      "id": 13,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.68.12.27, 10.29.97.133",
+      "fecha": "2026-10-24T08:55:52.783Z"
+    },
+    {
+      "id": 14,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.71.146.117, 10.26.61.133",
+      "fecha": "2026-10-24T08:55:52.959Z"
+    },
+    {
+      "id": 15,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 104.23.248.91, 10.29.97.133",
+      "fecha": "2026-10-24T08:57:56.598Z"
+    },
+    {
+      "id": 16,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.69.132.233, 10.26.61.133",
+      "fecha": "2026-10-24T09:02:23.904Z"
+    },
+    {
+      "id": 17,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.69.132.233, 10.29.97.133",
+      "fecha": "2026-10-24T09:04:19.201Z"
+    },
+    {
+      "id": 18,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.71.151.204, 10.24.63.117",
+      "fecha": "2026-10-24T09:07:31.693Z"
+    },
+    {
+      "id": 19,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.71.151.151, 10.26.61.133",
+      "fecha": "2026-10-24T09:14:45.791Z"
+    },
+    {
+      "id": 20,
+      "usuario_id": 1,
+      "modulo": "Gastos",
+      "accion": "Registrar gasto",
+      "detalle": "abc por $34",
+      "ip": "201.247.37.62, 108.162.210.221, 10.29.97.133",
+      "fecha": "2026-10-24T09:15:21.256Z"
+    },
+    {
+      "id": 21,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.71.146.120, 10.24.63.117",
+      "fecha": "2026-10-24T20:19:24.454Z"
+    },
+    {
+      "id": 22,
+      "usuario_id": 1,
+      "modulo": "Usuarios",
+      "accion": "Crear usuario",
+      "detalle": "Creó al usuario will@empresa.com con rol empleado",
+      "ip": "201.247.37.62, 172.71.146.129, 10.29.97.133",
+      "fecha": "2026-10-24T20:21:14.188Z"
+    },
+    {
+      "id": 23,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Cierre de sesión",
+      "detalle": "El usuario cerró sesión",
+      "ip": "201.247.37.62, 172.71.147.238, 10.29.97.133",
+      "fecha": "2026-10-24T20:21:29.467Z"
+    },
+    {
+      "id": 24,
+      "usuario_id": 4,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (will@empresa.com)",
+      "ip": "201.247.37.62, 172.71.146.221, 10.29.97.133",
+      "fecha": "2026-10-24T20:21:34.956Z"
+    },
+    {
+      "id": 25,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.69.132.233, 10.24.63.117",
+      "fecha": "2026-10-25T01:13:09.557Z"
+    },
+    {
+      "id": 26,
+      "usuario_id": 1,
+      "modulo": "Seguridad",
+      "accion": "Inicio de sesión",
+      "detalle": "Ingreso exitoso (admin@empresa.com)",
+      "ip": "201.247.37.62, 172.71.147.81, 10.29.97.133",
+      "fecha": "2026-10-25T01:13:10.260Z"
+    }
+  ]
+}
