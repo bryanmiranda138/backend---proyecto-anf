@@ -13,13 +13,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta_empresarial_2026';
 
-// Reemplaza la conexión local por la conexión en la nube (Supabase)
+// Conexión a PostgreSQL (Supabase / Nube)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
         rejectUnauthorized: false // Requerido por Supabase en conexiones externas
     }
 });
+
 // Helper: Registrar en Bitácora (Módulo 7)
 async function registrarBitacora(usuarioId, modulo, accion, detalle, req) {
     try {
@@ -88,8 +89,12 @@ app.post('/api/auth/logout', verificarToken, async (req, res) => {
 });
 
 app.get('/api/usuarios', verificarToken, soloAdmin, async (req, res) => {
-    const { rows } = await pool.query('SELECT id, nombre, email, rol, activo, creado_en FROM usuarios ORDER BY id ASC');
-    res.json(rows);
+    try {
+        const { rows } = await pool.query('SELECT id, nombre, email, rol, activo, creado_en FROM usuarios ORDER BY id ASC');
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al obtener usuarios.' });
+    }
 });
 
 app.post('/api/usuarios', verificarToken, soloAdmin, async (req, res) => {
@@ -107,23 +112,62 @@ app.post('/api/usuarios', verificarToken, soloAdmin, async (req, res) => {
     }
 });
 
+app.put('/api/usuarios/:id', verificarToken, soloAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { nombre, email, password, rol } = req.body;
+    try {
+        let result;
+        if (password && password.trim() !== '') {
+            const hash = await bcrypt.hash(password, 10);
+            result = await pool.query(
+                `UPDATE usuarios SET nombre = $1, email = $2, password_hash = $3, rol = $4 WHERE id = $5 RETURNING id, nombre, email, rol, activo`,
+                [nombre, email, hash, rol, id]
+            );
+        } else {
+            result = await pool.query(
+                `UPDATE usuarios SET nombre = $1, email = $2, rol = $3 WHERE id = $4 RETURNING id, nombre, email, rol, activo`,
+                [nombre, email, rol, id]
+            );
+        }
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }
+
+        await registrarBitacora(req.usuario.id, 'Usuarios', 'Modificar usuario', `Actualizó usuario ID ${id} (${email}, rol: ${rol})`, req);
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(400).json({ error: 'No se pudo actualizar el usuario. Verifique que el correo no esté en uso.' });
+    }
+});
+
 app.patch('/api/usuarios/:id/estado', verificarToken, soloAdmin, async (req, res) => {
     const { id } = req.params;
     const { activo } = req.body;
-    const { rows } = await pool.query(
-        'UPDATE usuarios SET activo = $1 WHERE id = $2 RETURNING id, email, activo',
-        [activo, id]
-    );
-    await registrarBitacora(req.usuario.id, 'Usuarios', 'Cambio de estado', `Usuario ID ${id} activo=${activo}`, req);
-    res.json(rows[0]);
+    try {
+        const { rows } = await pool.query(
+            'UPDATE usuarios SET activo = $1 WHERE id = $2 RETURNING id, email, activo',
+            [activo, id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado.' });
+
+        await registrarBitacora(req.usuario.id, 'Usuarios', 'Cambio de estado', `Usuario ID ${id} activo=${activo}`, req);
+        res.json(rows[0]);
+    } catch (err) {
+        res.status(400).json({ error: 'No se pudo cambiar el estado del usuario.' });
+    }
 });
 
 /* =========================================================
    MÓDULO 4: CATEGORÍAS FINANCIERAS
    ========================================================= */
 app.get('/api/categorias', verificarToken, async (req, res) => {
-    const { rows } = await pool.query('SELECT * FROM categorias ORDER BY tipo, nombre');
-    res.json(rows);
+    try {
+        const { rows } = await pool.query('SELECT * FROM categorias ORDER BY tipo, nombre');
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al consultar categorías.' });
+    }
 });
 
 app.post('/api/categorias', verificarToken, soloAdmin, async (req, res) => {
@@ -131,10 +175,44 @@ app.post('/api/categorias', verificarToken, soloAdmin, async (req, res) => {
     try {
         const { rows } = await pool.query(
             'INSERT INTO categorias (nombre, tipo, descripcion) VALUES ($1, $2, $3) RETURNING *',
-            [nombre, tipo, descripcion]
+            [nombre, tipo, descripcion || null]
         );
         await registrarBitacora(req.usuario.id, 'Categorías', 'Crear categoría', `Nueva categoría: ${nombre} (${tipo})`, req);
         res.status(201).json(rows[0]);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.put('/api/categorias/:id', verificarToken, soloAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { nombre, tipo, descripcion } = req.body;
+    try {
+        const { rows } = await pool.query(
+            'UPDATE categorias SET nombre = $1, tipo = $2, descripcion = $3 WHERE id = $4 RETURNING *',
+            [nombre, tipo, descripcion || null, id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Categoría no encontrada.' });
+
+        await registrarBitacora(req.usuario.id, 'Categorías', 'Modificar categoría', `ID ${id}: ${nombre} (${tipo})`, req);
+        res.json(rows[0]);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.patch('/api/categorias/:id/estado', verificarToken, soloAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { activa } = req.body;
+    try {
+        const { rows } = await pool.query(
+            'UPDATE categorias SET activa = $1 WHERE id = $2 RETURNING *',
+            [activa, id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Categoría no encontrada.' });
+
+        await registrarBitacora(req.usuario.id, 'Categorías', 'Cambio de estado', `Categoría ID ${id} activa=${activa}`, req);
+        res.json(rows[0]);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -161,8 +239,12 @@ app.get('/api/movimientos', verificarToken, async (req, res) => {
     if (categoria_id) { params.push(categoria_id); query += ` AND m.categoria_id = $${params.length}`; }
 
     query += ' ORDER BY m.fecha DESC, m.id DESC';
-    const { rows } = await pool.query(query, params);
-    res.json(rows);
+    try {
+        const { rows } = await pool.query(query, params);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al consultar movimientos.' });
+    }
 });
 
 app.post('/api/movimientos', verificarToken, async (req, res) => {
@@ -171,6 +253,15 @@ app.post('/api/movimientos', verificarToken, async (req, res) => {
         return res.status(400).json({ error: 'El monto debe ser mayor que cero.' });
     }
     try {
+        // Validación de integridad: verificar que la categoría corresponda al tipo de movimiento
+        const catCheck = await pool.query('SELECT tipo, activa FROM categorias WHERE id = $1', [categoria_id]);
+        if (catCheck.rows.length === 0) {
+            return res.status(400).json({ error: 'La categoría seleccionada no existe.' });
+        }
+        if (catCheck.rows[0].tipo !== tipo) {
+            return res.status(400).json({ error: `La categoría seleccionada no corresponde al tipo ${tipo}.` });
+        }
+
         const { rows } = await pool.query(
             `INSERT INTO movimientos (usuario_id, categoria_id, tipo, concepto, monto, fecha)
              VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
@@ -191,13 +282,29 @@ app.post('/api/movimientos', verificarToken, async (req, res) => {
 
 app.put('/api/movimientos/:id', verificarToken, async (req, res) => {
     const { id } = req.params;
-    const { categoria_id, concepto, monto, fecha } = req.body;
+    const { tipo, categoria_id, concepto, monto, fecha } = req.body;
+    if (Number(monto) <= 0) {
+        return res.status(400).json({ error: 'El monto debe ser mayor que cero.' });
+    }
     try {
+        // Validación de integridad: verificar correspondencia entre categoría y tipo
+        const catCheck = await pool.query('SELECT tipo FROM categorias WHERE id = $1', [categoria_id]);
+        if (catCheck.rows.length === 0) {
+            return res.status(400).json({ error: 'La categoría seleccionada no existe.' });
+        }
+        if (tipo && catCheck.rows[0].tipo !== tipo) {
+            return res.status(400).json({ error: `La categoría no corresponde al tipo ${tipo}.` });
+        }
+
+        const tipoFinal = tipo || catCheck.rows[0].tipo;
         const { rows } = await pool.query(
-            `UPDATE movimientos SET categoria_id = $1, concepto = $2, monto = $3, fecha = $4
-             WHERE id = $5 RETURNING *`,
-            [categoria_id, concepto, monto, fecha, id]
+            `UPDATE movimientos
+             SET categoria_id = $1, tipo = $2, concepto = $3, monto = $4, fecha = $5
+             WHERE id = $6 RETURNING *`,
+            [categoria_id, tipoFinal, concepto, monto, fecha, id]
         );
+        if (rows.length === 0) return res.status(404).json({ error: 'Movimiento no encontrado.' });
+
         await registrarBitacora(req.usuario.id, 'Movimientos', 'Modificar registro', `ID ${id}: ${concepto} ($${monto})`, req);
         res.json(rows[0]);
     } catch (err) {
@@ -216,59 +323,70 @@ app.get('/api/finanzas/resumen', verificarToken, async (req, res) => {
     if (fechaInicio) { params.push(fechaInicio); filtroFecha += ` AND m.fecha >= $${params.length}`; }
     if (fechaFin) { params.push(fechaFin); filtroFecha += ` AND m.fecha <= $${params.length}`; }
 
-    // 1. Cálculo de Totales
-    const totalesQuery = `
-        SELECT
-            COALESCE(SUM(CASE WHEN m.tipo = 'ingreso' THEN m.monto ELSE 0 END), 0) AS ingresos_totales,
-            COALESCE(SUM(CASE WHEN m.tipo = 'gasto' THEN m.monto ELSE 0 END), 0) AS gastos_totales
-        FROM movimientos m
-        WHERE 1=1 ${filtroFecha}
-    `;
-    const { rows } = await pool.query(totalesQuery, params);
-    const ingresosTotales = parseFloat(rows[0].ingresos_totales);
-    const gastosTotales = parseFloat(rows[0].gastos_totales);
+    try {
+        // 1. Cálculo de Totales
+        const totalesQuery = `
+            SELECT
+                COALESCE(SUM(CASE WHEN m.tipo = 'ingreso' THEN m.monto ELSE 0 END), 0) AS ingresos_totales,
+                COALESCE(SUM(CASE WHEN m.tipo = 'gasto' THEN m.monto ELSE 0 END), 0) AS gastos_totales
+            FROM movimientos m
+            WHERE 1=1 ${filtroFecha}
+        `;
+        const { rows } = await pool.query(totalesQuery, params);
+        const ingresosTotales = parseFloat(rows[0].ingresos_totales);
+        const gastosTotales = parseFloat(rows[0].gastos_totales);
 
-    // Fórmulas requeridas:
-    // Resultado financiero = Ingresos totales - Gastos totales
-    const resultadoFinanciero = ingresosTotales - gastosTotales;
-    // Porcentaje de gastos = (Gastos totales / Ingresos totales) * 100 (si ingresos > 0)
-    const porcentajeGastos = ingresosTotales > 0
-        ? ((gastosTotales / ingresosTotales) * 100)
-        : 0;
+        // Resultado financiero = Ingresos totales - Gastos totales
+        const resultadoFinanciero = ingresosTotales - gastosTotales;
+        // Porcentaje de gastos = (Gastos totales / Ingresos totales) * 100 (si ingresos > 0)
+        const porcentajeGastos = ingresosTotales > 0
+            ? ((gastosTotales / ingresosTotales) * 100)
+            : 0;
 
-    // 2. Desglose por categoría para gráficos
-    const porCategoriaQuery = `
-        SELECT c.nombre AS categoria, m.tipo, SUM(m.monto) AS total
-        FROM movimientos m
-        JOIN categorias c ON m.categoria_id = c.id
-        WHERE 1=1 ${filtroFecha}
-        GROUP BY c.nombre, m.tipo
-        ORDER BY total DESC
-    `;
-    const categoriasResult = await pool.query(porCategoriaQuery, params);
+        // 2. Desglose por categoría para gráficos
+        const porCategoriaQuery = `
+            SELECT c.nombre AS categoria, m.tipo, SUM(m.monto) AS total
+            FROM movimientos m
+            JOIN categorias c ON m.categoria_id = c.id
+            WHERE 1=1 ${filtroFecha}
+            GROUP BY c.nombre, m.tipo
+            ORDER BY total DESC
+        `;
+        const categoriasResult = await pool.query(porCategoriaQuery, params);
 
-    res.json({
-        ingresosTotales: Number(ingresosTotales.toFixed(2)),
-        gastosTotales: Number(gastosTotales.toFixed(2)),
-        resultadoFinanciero: Number(resultadoFinanciero.toFixed(2)),
-        porcentajeGastos: Number(porcentajeGastos.toFixed(2)),
-        desgloseCategorias: categoriasResult.rows
-    });
+        res.json({
+            ingresosTotales: Number(ingresosTotales.toFixed(2)),
+            gastosTotales: Number(gastosTotales.toFixed(2)),
+            resultadoFinanciero: Number(resultadoFinanciero.toFixed(2)),
+            porcentajeGastos: Number(porcentajeGastos.toFixed(2)),
+            desgloseCategorias: categoriasResult.rows
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al calcular el resumen financiero.' });
+    }
 });
 
 /* =========================================================
    MÓDULO 7: CONSULTA DE BITÁCORA
    ========================================================= */
 app.get('/api/bitacora', verificarToken, soloAdmin, async (req, res) => {
-    const { rows } = await pool.query(`
-        SELECT b.id, COALESCE(u.nombre, 'Sistema') AS usuario, b.modulo, b.accion,
-               b.detalle, b.ip, TO_CHAR(b.fecha, 'YYYY-MM-DD HH24:MI:SS') AS fecha
-        FROM bitacora b
-        LEFT JOIN usuarios u ON b.usuario_id = u.id
-        ORDER BY b.fecha DESC LIMIT 100
-    `);
-    res.json(rows);
+    try {
+        const { rows } = await pool.query(`
+            SELECT b.id, COALESCE(u.nombre, 'Sistema') AS usuario, b.modulo, b.accion,
+                   b.detalle, b.ip, TO_CHAR(b.fecha, 'YYYY-MM-DD HH24:MI:SS') AS fecha
+            FROM bitacora b
+            LEFT JOIN usuarios u ON b.usuario_id = u.id
+            ORDER BY b.fecha DESC LIMIT 100
+        `);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al consultar la bitácora.' });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor ejecutándose en http://localhost:${PORT}`));
+if (require.main === module) {
+    app.listen(PORT, () => console.log(`Servidor ejecutándose en http://localhost:${PORT}`));
+}
+
+module.exports = app;
